@@ -12,6 +12,7 @@ m = X(2);
 h = X(3);
 % IK gating variables
 n = X(4);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Optional Inputs (varargin)
 % Five optional inputs may be assigned:
@@ -33,12 +34,19 @@ n = X(4);
 %    - pstim = 3 -> Voltage-clamp
 %
 % When no values are provided, the default ones are used (marked with *)
-%
+
+
 % Set default values for optional inputs
 optargs = {1,[2,80,0.5,100]};
 newVals = cellfun(@(x) ~isempty(x), varargin);
 optargs(newVals) = varargin(newVals);
 [flag_ode, pstim]=optargs{:};
+
+
+CL = varargin{2}(4); %cycle length
+%ramp variables
+t_sim = varargin{3};
+number_steps = varargin{4};
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Other Variables
 % Resting Membrane Potential
@@ -108,6 +116,37 @@ switch pstim(1)
         Istim = 0;
         % update V -> X(1)
         dV = 0;
+    case 4
+    % Current Ramp
+        Istim_max = -pstim(2);
+        %number_steps = 5;
+        delta_I = Istim_max/number_steps;
+        I_stim_array = 0;
+        for i = 1:number_steps
+            I_stim_array(i+1)  = I_stim_array(end) +delta_I;
+        end
+        I_stim_interp = kron(I_stim_array,ones(1,round(t_sim/number_steps)+1));
+        
+        Istim = I_stim_interp(1,round(t+1));
+        
+         % update V -> X(1)
+        dV = - (INa+IK+Ileak+Istim)/C;
+       case 5
+    % Current Ramp
+        Istim_max = -pstim(2);
+        %number_steps = 5;
+        delta_I = Istim_max/number_steps;
+        I_stim_array = Istim_max;
+        for i = 1:number_steps
+            I_stim_array(i+1)  = I_stim_array(end) - delta_I;
+        end
+        I_stim_interp = kron(I_stim_array,ones(1,round(t_sim/number_steps)+1));
+        
+        Istim = I_stim_interp(1,round(t+1));
+        
+         % update V -> X(1)
+        dV = - (INa+IK+Ileak+Istim)/C;
+        
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% OUTPUT
