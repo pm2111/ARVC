@@ -1,4 +1,4 @@
-function APD=computeAPD(t,V,p,flag)
+function APD=computeAPD_rudy(t,V,p,flag)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function to computer the AP duration at different % of repolarisation
 %
@@ -27,7 +27,8 @@ m = V(1);
 % Looking for the instant of max upstroke velocity
 [~, i_start] = max( diff(V(1:iM)) ./ diff(t(1:iM)) );
 
-Vth = m + (1-p/100)*(M-m);
+%Vth = m + (1-p/100)*(M-m);
+Vth = p/100 * m;
 
 i_end = find(V(iM:end)<=Vth,1,'first')+iM;
 
