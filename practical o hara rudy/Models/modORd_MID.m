@@ -25,7 +25,7 @@ function output=modORd_MID(t,X,varargin)
 %    - pstim = 2 -> Voltage-clamp
 %
 % 3) Cycle Length (ms): 
-%    - CL = 1000*
+%    - CL = 1000
 %
 % 4) Extracellular Ionic Concentrations [cCao cNao cKo] mM:
 %    Nao = 140 mM* 
