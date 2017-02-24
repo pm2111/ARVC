@@ -12,11 +12,11 @@ close all; clear; clc;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Main Settings: 
 % simulation name: change it for every different simulation
-sim_name = 'tempSIM';
+sim_name = 'OHR_endo_voltage_clamp_Na_condunctancex2';
 % model_list: all the models that need to be tested/compared
 % model_list = {'mod_1','mod_2','mod_3'...};
 % where mod_n is the name of the function file containing the model
-model_list = { 'modORd_ENDO'};
+model_list = { 'modORd_ENDO_ARVC'};
 % How many models? -> n_mod
 n_mod = size(model_list,2);
 % overwrite: 1 overwrite, 0 otherwise 
@@ -42,8 +42,8 @@ Fig_AP = 0;
 Fig_ci =0;
 Fig_I = 0;
 fig_apd_response =0;
-fig_drugs =1;
-fig_ap_shape =1;
+fig_drugs =0;
+fig_ap_shape =0;
 % Extracellular Concentrations
 cNao = 140;
 cCao = 1.8;
@@ -93,6 +93,7 @@ else
 end
 % FLAG
 if flag
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %initialise cells that should not be overwritten in simu step 
 APDs = cell(n_mod,n_con); %can also include different apd fractions (not included here)
@@ -103,12 +104,12 @@ ts = cell(n_mod);
 voltage_response=cell(2);
 
 %% Simulations
-for v_cl = 1:20 %iterate models over a range of constant voltage stimuli
-             voltage_response{1,v_cl} = -87+5*v_cl; %store voltage clamps used 
-             y0(1) = -87+5*v_cl;
+for v_cl = 1:30 %iterate models over a range of constant voltage stimuli
+             voltage_response{1,v_cl} = -100+5*v_cl; %store voltage clamps used 
+             y0_0(1) = voltage_response{1,v_cl};
 for i_mod = 1:n_mod
     for j_mod = 1 :n_con
-        fprintf('Sim %i of %i: %s\n',i_mod,n_mod,model_list{i_mod});
+        disp(['Sim model number ',num2str(i_mod),'out of ', n_mod,model_list{i_mod},'stim', num2str(y0_0(1)), ' mV']);
         mod =  str2func(model_list{i_mod});
         if length(v_ow)==1; ow=v_ow; else ow=v_ow(i_mod); end;
         if length(v_nb)==1; nb=v_nb; else nb=v_nb(i_mod); end;
@@ -160,7 +161,7 @@ for i_mod = 1:n_mod
             %subplot(2,2,4); hold on; xlabel('t (ms)'); ylabel('I_{NaL} pA/pF'); box; 
             end
         end
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%end%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         vNai=zeros(1,nb);  
         vCai=zeros(1,nb);   
         vKi=zeros(1,nb);   
@@ -191,7 +192,7 @@ for i_mod = 1:n_mod
         
         for n = 1:nb
             [t,y] = ode15s(mod,[0 BCL],y0,options,input_args{:});
-            fprintf('Beat %i of %i\n',n,nb);
+            %fprintf('Beat %i of %i\n',n,nb);
             if n ==nb
             APs{i_mod,j_mod} = y(:,1); %output last beat AP for every drug concen, last one has no drug
             ts{i_mod, j_mod} = t;
@@ -206,7 +207,7 @@ for i_mod = 1:n_mod
             vNai(n)=y(end,2);  
             vCai(n)=y(end,6); 
             vKi(n)=y(end,4);  
-            
+           
         end
 
 
@@ -222,8 +223,9 @@ for i_mod = 1:n_mod
         end
         
         
-        voltage_response{2,v_cl} = CVs(end,2); %only sodium current is studied
         
+        voltage_response{2,v_cl} = CVs(end,2); %only sodium current is studied
+        disp(CVs(end,2));
         end %ends voltage clamp loop
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %% Figures Plot:
@@ -274,17 +276,8 @@ for i_mod = 1:n_mod
     %     for z = 1:max(size(ap_range))
     %          plot(t(1:1000),APs{1,ap_range(z)}(1:1000), 'Linewidth',2,'Color',cols(z,:) , 'DisplayName', strcat('beat number', num2str(ap_range(z))));
     %     end
-    %     grid on;
-    %     legend('show');
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %% APD
-        %APDs = cell(1);
-        %APD = computeAPD_rudy(t,y(:,1),90,1);
-        %fprintf('APD_90: %4.2f ms\n\n',APD);
+    %     grid on;function output=modORd_ENDO(t,X,varargin) 
 
-
-    end 
-end
 %compute APD averages
 
 for i = 1:i_mod
@@ -302,7 +295,7 @@ figure('Name','APD response to CL')
 hold all;
 for i = 1:i_mod
     for j =1:max(size(APD_set))
-        disp (j);
+        
     scatter(v_BCL(i), av_APD(i,j),apd_color(j), 'Linewidth',2,'DisplayName', strcat('APD %', num2str(APD_set(j))));
     end
 end
@@ -365,8 +358,20 @@ if Fig_I==1
     figure(hI2); legend(char(legend_label)); saveas(hI1,[dir_Save '/IonicCurrents_2']);
     figure(hI3); legend(char(legend_label)); saveas(hI1,[dir_Save '/IonicCurrents_3']);
 end   
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%
+%%%SAVING DATA POINTS
+dlmwrite(sim_name, voltage_response);
+v100 = csvread('Sim_Data/endo_Na_V_clamp');
+figure('Name', 'Na Conductance Dependent Current')
+hold all;
+plot([voltage_response{1,1:end}], [voltage_response{2,1:end}],'LineWidth',2.0, 'DisplayName', 'Na Conductance reduced by 36%');
+plot(v100(1,:), v100(2,:),'LineWidth',2.0, 'DisplayName', 'Healthy Na Conductance');
+legend('show');
+grid on;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end
 % END FLAG
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% END FILE
