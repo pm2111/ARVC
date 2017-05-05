@@ -229,11 +229,8 @@ djca=(fcass-jca)/tjca;
 dffp=(fss-ffp)/tffp;
 dfcafp=(fcass-fcafp)/tfcafp;
 fICaLp=(1.0/(1.0+KmCaMK/CaMKa));
-<<<<<<< HEAD
-=======
 %peak Ca L (from supplementary mat)
 ICaLmax = PCa * PhiCaL; 
->>>>>>> 6ccd9ec5215166a983b0e3d299f2985ce3705472
 %
 ICaL=((1.0-fICaLp)*PCa*PhiCaL*d*(f*(1.0-nca)+jca*fca*nca)+...
               fICaLp*PCap*PhiCaL*d*(fp*(1.0-nca)+jca*fcap*nca));
@@ -455,7 +452,7 @@ cmdnmax=0.05;
 kmcmdn=0.00238; 
 trpnmax=0.07;
 kmtrpn=0.0005;
-BSRmax=0.047;   
+BSRmax=0.047;   fICaLp
 KmBSR=0.00087;
 BSLmax=1.124;
 KmBSL=0.0087;
@@ -487,10 +484,6 @@ if flag_ode==1
 else
   output = [Istim   INa       INaL     Ito        IKr...    %1
             IKs     IK1       ICaL     INaK       INaCa...  %2
-<<<<<<< HEAD
-            Jrel    Jup       INaCa_i  INaCa_ss]';                                  %3   
-=======
-            Jrel    Jup       INaCa_i  INaCa_ss   ICaLmax... 
+            Jrel    Jup       INaCa_i  INaCa_ss   fICaLp... 
             fINaLp]';                                  %3   
->>>>>>> 6ccd9ec5215166a983b0e3d299f2985ce3705472
 end

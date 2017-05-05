@@ -118,6 +118,7 @@ mss=1.0/(1.0+exp((-(v+39.57))/9.871));
 tm=1.0/(6.765*exp((v+11.64)/34.77)+8.552*exp(-(v+77.42)/5.955));
 hss=1.0/(1+exp((v+82.90)/6.086));
 thf=1.0/(1.432e-5*exp(-(v+1.196)/6.285)+6.149*exp((v+0.5096)/20.27));
+
 ths=1.0/(0.009794*exp(-(v+17.95)/28.05)+0.3343*exp((v+5.730)/56.66));
 Ahf=0.99;
 Ahs=1.0-Ahf;
@@ -134,11 +135,11 @@ dhs=(hss-hs)/ths;
 dj=(jss-j)/tj;
 dhsp=(hssp-hsp)/thsp;
 djp=(jss-jp)/tjp;
-GNa=75;
+GNa=75.0;
 fINap=(1.0/(1.0+KmCaMK/CaMKa));
 %
 INa=GNa*(v-ENa)*m^3.0*((1.0-fINap)*h*j+fINap*hp*jp);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%plot(1 /(1+exp(-(x+40)/9))%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% INaL current
 tmL=tm;
 mLss=1.0/(1.0+exp((-(v+42.85))/5.264));
@@ -229,11 +230,8 @@ djca=(fcass-jca)/tjca;
 dffp=(fss-ffp)/tffp;
 dfcafp=(fcass-fcafp)/tfcafp;
 fICaLp=(1.0/(1.0+KmCaMK/CaMKa));
-<<<<<<< HEAD
-=======
 %peak Ca L (from supplementary mat)
 ICaLmax = PCa * PhiCaL; 
->>>>>>> 6ccd9ec5215166a983b0e3d299f2985ce3705472
 %
 ICaL=((1.0-fICaLp)*PCa*PhiCaL*d*(f*(1.0-nca)+jca*fca*nca)+...
               fICaLp*PCap*PhiCaL*d*(fp*(1.0-nca)+jca*fcap*nca));
@@ -487,10 +485,6 @@ if flag_ode==1
 else
   output = [Istim   INa       INaL     Ito        IKr...    %1
             IKs     IK1       ICaL     INaK       INaCa...  %2
-<<<<<<< HEAD
-            Jrel    Jup       INaCa_i  INaCa_ss]';                                  %3   
-=======
             Jrel    Jup       INaCa_i  INaCa_ss   ICaLmax... 
             fINaLp]';                                  %3   
->>>>>>> 6ccd9ec5215166a983b0e3d299f2985ce3705472
 end

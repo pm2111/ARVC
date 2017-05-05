@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-function APD=computeAPD(t,V,p,flag)
-=======
 function APD=computeAPD_rudy(t,V,p,flag)
->>>>>>> 6ccd9ec5215166a983b0e3d299f2985ce3705472
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function to computer the AP duration at different % of repolarisation
 %
@@ -31,14 +27,10 @@ m = V(1);
 % Looking for the instant of max upstroke velocity
 [~, i_start] = max( diff(V(1:iM)) ./ diff(t(1:iM)) );
 
-<<<<<<< HEAD
-Vth = m + (1-p/100)*(M-m);
-=======
 %Vth = m + (1-p/100)*(M-m);
 Vth = p/100 * m;
->>>>>>> 6ccd9ec5215166a983b0e3d299f2985ce3705472
 
-i_end = find(V(iM:end)<=Vth,1,'first')+iM;
+i_end = find(V(iM:end)<=Vth,1,'first') +iM; %why do we add iM? Doesnt the find() already give index at X% of repol?
 
 APD = t(i_end) - t(i_start);
 
