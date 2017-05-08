@@ -1,7 +1,7 @@
 % HDF5 reader for 1D fibre sims 
 
 %startpath= '/home/scratch/testoutput/OUT_sim_duration_9000.00_BCL_600.00/' ;
-startpath= '/home/scratch/OUT_BCL600/' ;
+startpath= '/home/scratch/OUT_BCL300.00/' ;
 
 endpath = '/results.h5';
 endpath1 = 'AbstractCardiacProblem_mSolution.h5';
@@ -11,7 +11,7 @@ a = b(1);
 results = zeros(a(1)-3,4);
 activation_map = cell(1);
 for i = 1:(a-3)
-    
+   
     midpath = subdirs(3+i,1).name;
     
     file_id = H5F.open(strcat(startpath , midpath , endpath)) ;
@@ -44,12 +44,16 @@ for i = 1:(a-3)
     x_data = cell_position;
     nb = size(activation_time);
     
+    voltage_activation = activation_counter(sim_time, voltage,300.00,0.2);
     interval = sim_time(end)/nb(3);
     for j =1:nb(3)
         
-        y_data = activation_time(1,:,j);
+        %y_data = activation_time(1,:,j);
+        y_data = voltage_activation(j,:);
+        
+        [xfit, yfit, vel_arvc, err_arvc] = fit_line(x_data(6:end-1),y_data(6:end));  %m is the vel in cm/ms ( *10 for m/s))
 
-        [xfit, yfit, vel_arvc, err_arvc] = fit_line(x_data(15:end),y_data(15:end));  %m is the vel in cm/ms ( *10 for m/s))
+        %xfit, yfit, vel_arvc, err_arvc] = fit_line(x_data(15:end),y_data(15:end));  %m is the vel in cm/ms ( *10 for m/s))
         %[vel_arvc] = fit_rough_line(x_data(5:end),y_data(5:end)); %use if first method fails
         vel_arvc = 10 * vel_arvc; %in m/s
         %[xfit1, yfit1, vel_control, err_control ] = fit_line(x_data1,y_data1);  %m is the vel in cm/ms ( *10 for m/s))
@@ -263,35 +267,35 @@ end
 
 
 
-
-function[ ] = activation_counter(sim_time, voltage,period, step_size)
+function[times ] = activation_counter(sim_time, voltage,period, step_size)
 %%% NB> this script is dependent on the timestep of the simulation
-
-step_size= 0.2;
+%period = 600.0;
+%step_size= 0.2;
 cell_nr = size(voltage);
 cnr = cell_nr(2);
-beat_nr = cell_nr(3);
+beat_nr = cell_nr(3)*step_size/period;
 %stim_time_ind = find( abs(voltage(1,5,1:1500) - 40) < 0.5);
  
 interval = (period/step_size );
 
 reject_time = 5;%reject if time taken is larger that 10 ms between adjacent nodes
 reject_index = reject_time/step_size;
-x = 1;
-y = reject_index;
-j=1;
-%for j=1:beat_nr
-    [stim_max, stim_time_ind] = max( voltage(1,5,x:y));
-   
+% times = zeros(beat_nr,cnr);
+% peaks = zeros(beat_nr, cnr);
+% indices = zeros(beat_nr,cnr);
+for j=1:beat_nr
+    %[stim_max, stim_time_ind] = max( voltage(1,5,x:y));
+    x = 1+ (j-1)*interval;
+    y = x+ reject_index;
     for i=1:cnr-1
    
        %ind = find( abs(voltage(1,i,x:y)-25) < 20);
        [stim_max, ind] = max( diff(voltage(1,i,x:y)));
        ind = x +ind; %we start with a small sample of the total array
       % if stim_max < 50 && stim_max >5.0
-           times(i) = sim_time(ind);
-            peaks(i) = stim_max;
-            indices(i) = ind;
+           times(j,i) = sim_time(ind);
+            peaks(j,i) = stim_max;
+            indices(j,i) = ind;
      %  else
 %            times(i)=0;
 %            peaks(i) =stim_max;
@@ -310,7 +314,7 @@ j=1;
         disp(x);
         disp(y)
     end
-%end
+end
 
 end
 
