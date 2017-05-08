@@ -1,7 +1,7 @@
 % HDF5 reader for 1D fibre sims 
 
-%startpath= '/home/scratch/testoutput/OUT_sim_duration_9000.00_BCL_600.00/' ;
-startpath= '/home/scratch/OUT_BCL300.00/' ;
+startpath= '/home/scratch/testoutput/OUT_sim_duration_9000.00_BCL_300.00/' ;
+%startpath= '/home/scratch/OUT_BCL300.00/' ;
 
 endpath = '/results.h5';
 endpath1 = 'AbstractCardiacProblem_mSolution.h5';
@@ -44,7 +44,7 @@ for i = 1:(a-3)
     x_data = cell_position;
     nb = size(activation_time);
     
-    voltage_activation = activation_counter(sim_time, voltage,300.00,0.2);
+    [voltage_activation, max_grads] = activation_counter(sim_time, voltage,300.00,0.2);
     interval = sim_time(end)/nb(3);
     for j =1:nb(3)
         
@@ -68,7 +68,7 @@ for i = 1:(a-3)
         end
         vel_field{i,j} = vel_arvc;
         activation_map{i,j} = y_data;
-        
+        grads{i,j} = max_grads(j,:);
         min_voltage(j) = mean(min(voltage(1,6:end,1+(j-1)*interval:(j)*interval),[],3));
         
     end
@@ -100,8 +100,8 @@ end
 
 figure()
 hold all
-scatter(sim_time,voltage_field_pace{1,85},'DisplayName','pacemaker cell')
-scatter(sim_time,voltage_field_myo{1,85},'DisplayName','mid-fibre myocyte')
+scatter(sim_time,voltage_field_pace{1,3},'DisplayName','pacemaker cell')
+scatter(sim_time,voltage_field_myo{1,3},'DisplayName','mid-fibre myocyte')
 set(gca,'FontSize',25,'fontWeight','bold')
 legend('show')
 xlabel('time [ms]')
@@ -267,7 +267,7 @@ end
 
 
 
-function[times ] = activation_counter(sim_time, voltage,period, step_size)
+function[times, max_grad ] = activation_counter(sim_time, voltage,period, step_size)
 %%% NB> this script is dependent on the timestep of the simulation
 %period = 600.0;
 %step_size= 0.2;
@@ -292,16 +292,17 @@ for j=1:beat_nr
        %ind = find( abs(voltage(1,i,x:y)-25) < 20);
        [stim_max, ind] = max( diff(voltage(1,i,x:y)));
        ind = x +ind; %we start with a small sample of the total array
-      % if stim_max < 50 && stim_max >5.0
-           times(j,i) = sim_time(ind);
-            peaks(j,i) = stim_max;
+      if stim_max < 3 
+           times(j,i) = 0.0;
+            max_grad(j,i) = stim_max;
             indices(j,i) = ind;
-     %  else
-%            times(i)=0;
-%            peaks(i) =stim_max;
-%            indices(i) = ind;
+           
+       else
+            times(j,i) = sim_time(ind);
+            max_grad(j,i) = stim_max;
+            indices(j,i) = ind;
            %break
-      % end
+       end
        %ind = ind(1);
       %  if (abs(argvalue) - abs(stim_max)) > 20
         %    times(j,i) = 0;
@@ -311,8 +312,8 @@ for j=1:beat_nr
        % end
         x = ind-1;
         y = x + reject_index;
-        disp(x);
-        disp(y)
+%         disp(x);
+%         disp(y)
     end
 end
 
